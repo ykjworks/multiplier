@@ -348,8 +348,10 @@ function endGame() {
 // ─── Event Listeners ─────────────────────────────────────────────────────────
 
 startBtn.addEventListener('click', handleStartStop);
+instructions.addEventListener('click', () => instructions.classList.remove('visible'));
 
 submitBtn.addEventListener('click', submitAnswer);
+document.getElementById('continue-btn').addEventListener('click', continueAfterAnswer);
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {

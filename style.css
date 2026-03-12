@@ -134,6 +134,7 @@ main {
 
 #instructions.visible {
   display: block;
+  cursor: pointer;
 }
 
 kbd {
@@ -178,17 +179,15 @@ kbd {
   text-align: center;
 }
 
-#submit-btn {
+#submit-btn,
+#continue-btn {
   padding: 4px 12px;
   font-size: 1rem;
   cursor: pointer;
 }
 
-#continue-hint {
+#continue-btn {
   display: none;
-  font-size: 0.95rem;
-  color: #555;
-  font-style: italic;
 }
 
 #question-box.answer-mode #answer-input,
@@ -196,8 +195,8 @@ kbd {
   display: none;
 }
 
-#question-box.answer-mode #continue-hint {
-  display: inline;
+#question-box.answer-mode #continue-btn {
+  display: inline-block;
 }
 
 /* Grid fills game-area */
@@ -279,6 +278,81 @@ td.wrong-cell {
   font-size: 1.65rem;
   background: #ffcdd2 !important;
   color: #b71c1c;
+}
+
+@media (max-width: 540px) {
+  body {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* Stack game-area above scoreboard */
+  #play-area {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Game area fills available screen width */
+  #game-area {
+    width: calc(100vw - 28px);
+    height: calc(100vw - 28px);
+  }
+
+  /* Scoreboard becomes a horizontal row below the grid */
+  #scoreboard {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 0;
+    gap: 16px;
+  }
+
+  /* End message: allow wrapping */
+  #end-message {
+    white-space: normal;
+  }
+
+  /* Question box: allow wrapping, no overflow */
+  #question-box {
+    white-space: normal;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: calc(100vw - 28px);
+    left: 0;
+    transform: none;
+  }
+
+  /* Minimum 44px touch targets */
+  #start-btn,
+  #submit-btn,
+  #continue-btn {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  #timer-input,
+  #answer-input {
+    min-height: 44px;
+    padding: 10px 6px;
+  }
+
+  /* Grid font: smaller to fit 14 columns in ~362px */
+  #grid th,
+  #grid td {
+    font-size: 0.7rem;
+  }
+
+  th.active-label {
+    font-size: 0.85rem;
+  }
+
+  td.answer-cell,
+  td.wrong-flash,
+  td.wrong-cell {
+    font-size: 0.8rem;
+  }
 }
 
 /* Watermark icon */
