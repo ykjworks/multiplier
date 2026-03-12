@@ -16,6 +16,11 @@ const endMessage = document.getElementById('end-message');
 const cellMap = {};          // cellMap["a,b"] → <td>
 const labelMap = { row: {}, col: {} };  // labelMap.row[n] → [<th left>, <th right>]
 
+// Browse-highlight state (used when game is idle or ended)
+let browseRow = null;
+let browseCol = null;
+let browseCell = null; // {r, c} if last highlight was triggered by a cell click
+
 // ─── Options (persisted) ─────────────────────────────────────────────────────
 
 const OPTIONS_KEY = 'multiplicationOptions';
@@ -126,6 +131,9 @@ function buildGrid() {
 // ─── Grid Helpers ────────────────────────────────────────────────────────────
 
 function clearGrid() {
+  browseRow = null;
+  browseCol = null;
+  browseCell = null;
   for (let r = 1; r <= 12; r++) {
     for (let c = 1; c <= 12; c++) {
       const td = cellMap[`${r},${c}`];
@@ -133,13 +141,41 @@ function clearGrid() {
       td.className = '';
     }
     for (const th of labelMap.row[r]) {
-      th.classList.remove('active-label');
+      th.classList.remove('active-label', 'browse-label');
     }
   }
   for (let c = 1; c <= 12; c++) {
     for (const th of labelMap.col[c]) {
-      th.classList.remove('active-label');
+      th.classList.remove('active-label', 'browse-label');
     }
+  }
+}
+
+function applyBrowseHighlights() {
+  // Clear existing browse highlights
+  for (let r = 1; r <= 12; r++) {
+    for (let c = 1; c <= 12; c++) {
+      cellMap[`${r},${c}`].classList.remove('browse-row', 'browse-col', 'browse-both');
+    }
+    for (const th of labelMap.row[r]) th.classList.remove('browse-label');
+  }
+  for (let c = 1; c <= 12; c++) {
+    for (const th of labelMap.col[c]) th.classList.remove('browse-label');
+  }
+
+  if (browseRow !== null) {
+    for (let c = 1; c <= 12; c++) {
+      const td = cellMap[`${browseRow},${c}`];
+      td.classList.add(browseCol !== null && c === browseCol ? 'browse-both' : 'browse-row');
+    }
+    for (const th of labelMap.row[browseRow]) th.classList.add('browse-label');
+  }
+  if (browseCol !== null) {
+    for (let r = 1; r <= 12; r++) {
+      if (browseRow !== null && r === browseRow) continue; // intersection already handled
+      cellMap[`${r},${browseCol}`].classList.add('browse-col');
+    }
+    for (const th of labelMap.col[browseCol]) th.classList.add('browse-label');
   }
 }
 
@@ -434,6 +470,43 @@ document.querySelectorAll('input[name="opt-mode"]').forEach(radio => {
 document.getElementById('opt-hide-timer').addEventListener('change', (e) => {
   options.hideTimer = e.target.checked;
   saveOptions();
+});
+
+// Browse highlighting — only active when game is idle or ended
+grid.addEventListener('click', (e) => {
+  instructions.classList.remove('visible');
+  if (state.phase !== 'idle' && state.phase !== 'ended') return;
+
+  const td = e.target.closest('td');
+  const th = e.target.closest('th');
+
+  if (td && td.dataset.row) {
+    const r = parseInt(td.dataset.row);
+    const c = parseInt(td.dataset.col);
+    if (browseCell && browseCell.r === r && browseCell.c === c) {
+      // Same cell clicked again — clear
+      browseRow = null; browseCol = null; browseCell = null;
+    } else {
+      browseRow = r; browseCol = c; browseCell = { r, c };
+    }
+    applyBrowseHighlights();
+  } else if (th && th.dataset.row) {
+    const r = parseInt(th.dataset.row);
+    if (browseRow === r && browseCell === null) {
+      browseRow = null;
+    } else {
+      browseRow = r; browseCell = null;
+    }
+    applyBrowseHighlights();
+  } else if (th && th.dataset.col) {
+    const c = parseInt(th.dataset.col);
+    if (browseCol === c && browseCell === null) {
+      browseCol = null;
+    } else {
+      browseCol = c; browseCell = null;
+    }
+    applyBrowseHighlights();
+  }
 });
 
 

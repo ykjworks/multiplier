@@ -290,11 +290,31 @@ kbd {
   background: #eeeeff;
 }
 
-/* Active labels */
-th.active-label {
+/* Browse-highlight classes — used when game is idle/ended */
+#grid td.browse-row,
+#grid td.browse-col {
+  background: #eeeeff;
+}
+
+#grid td.browse-both {
+  background: #c8e6c9;
+  color: #1b5e20;
+  font-weight: 900;
+}
+
+/* Active labels (game) and browse labels (idle) */
+th.active-label,
+th.browse-label {
   font-weight: 900;
   font-size: 1.7rem;
   color: #000;
+}
+
+/* Clickable cursor on cells/labels when browsing */
+#grid td,
+#grid th[data-row],
+#grid th[data-col] {
+  cursor: pointer;
 }
 
 /* Revealed answer cell */
@@ -427,7 +447,8 @@ td.wrong-cell {
     font-size: 0.7rem;
   }
 
-  th.active-label {
+  th.active-label,
+  th.browse-label {
     font-size: 0.85rem;
   }
 
