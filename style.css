@@ -249,7 +249,7 @@ kbd {
   border-collapse: collapse;
   background: white;
   box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  margin-top: 58px; /* space for floating question-box */
+  margin-top: 70px; /* space for floating question-box */
 }
 
 #grid th,
