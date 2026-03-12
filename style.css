@@ -236,17 +236,11 @@ kbd {
   color: #333;
 }
 
-/* Highlight classes */
-td.highlight-row {
-  background: #bbdefb;
-}
-
-td.highlight-col {
-  background: #fff9c4;
-}
-
-td.highlight-both {
-  background: #ffe082;
+/* Highlight classes — scoped to #grid to beat #grid td specificity */
+#grid td.highlight-row,
+#grid td.highlight-col,
+#grid td.highlight-both {
+  background: #eeeeff;
 }
 
 /* Active labels */
