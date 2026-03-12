@@ -402,6 +402,10 @@ document.addEventListener('keydown', (e) => {
     } else if (state.phase === 'pausing') {
       continueAfterAnswer();
     }
+  } else if (e.key === 'Escape') {
+    if (state.phase === 'running' || state.phase === 'pausing') {
+      endGame();
+    }
   }
 });
 
