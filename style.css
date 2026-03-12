@@ -302,6 +302,15 @@ kbd {
   font-weight: 900;
 }
 
+#grid td.browse-diag {
+  background: #eeeeff;
+}
+
+th.browse-corner {
+  background: #d0d0ff;
+  cursor: pointer;
+}
+
 /* Active labels (game) and browse labels (idle) */
 th.active-label,
 th.browse-label {
@@ -313,7 +322,8 @@ th.browse-label {
 /* Clickable cursor on cells/labels when browsing */
 #grid td,
 #grid th[data-row],
-#grid th[data-col] {
+#grid th[data-col],
+#grid th[data-diagonal] {
   cursor: pointer;
 }
 

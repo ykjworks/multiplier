@@ -15,11 +15,13 @@ const endMessage = document.getElementById('end-message');
 // Lookup caches built by buildGrid()
 const cellMap = {};          // cellMap["a,b"] → <td>
 const labelMap = { row: {}, col: {} };  // labelMap.row[n] → [<th left>, <th right>]
+const cornerMap = { main: [], anti: [] }; // corner th elements keyed by diagonal
 
 // Browse-highlight state (used when game is idle or ended)
 let browseRow = null;
 let browseCol = null;
 let browseCell = null; // {r, c} if last highlight was triggered by a cell click
+let browseDiag = null; // 'main' | 'anti' | null
 
 // ─── Options (persisted) ─────────────────────────────────────────────────────
 
@@ -62,11 +64,16 @@ const state = {
 
 function buildGrid() {
   grid.innerHTML = '';
+  cornerMap.main = [];
+  cornerMap.anti = [];
 
   // thead
   const thead = document.createElement('thead');
   const headRow = document.createElement('tr');
-  headRow.appendChild(document.createElement('th')); // top-left corner
+  const tlCorner = document.createElement('th');
+  tlCorner.dataset.diagonal = 'main';
+  cornerMap.main.push(tlCorner);
+  headRow.appendChild(tlCorner); // top-left corner
   for (let c = 1; c <= 12; c++) {
     const th = document.createElement('th');
     th.textContent = c;
@@ -75,7 +82,10 @@ function buildGrid() {
     labelMap.col[c].push(th);
     headRow.appendChild(th);
   }
-  headRow.appendChild(document.createElement('th')); // top-right corner
+  const trCorner = document.createElement('th');
+  trCorner.dataset.diagonal = 'anti';
+  cornerMap.anti.push(trCorner);
+  headRow.appendChild(trCorner); // top-right corner
   thead.appendChild(headRow);
   grid.appendChild(thead);
 
@@ -115,7 +125,10 @@ function buildGrid() {
   // tfoot
   const tfoot = document.createElement('tfoot');
   const footRow = document.createElement('tr');
-  footRow.appendChild(document.createElement('th')); // bottom-left corner
+  const blCorner = document.createElement('th');
+  blCorner.dataset.diagonal = 'anti';
+  cornerMap.anti.push(blCorner);
+  footRow.appendChild(blCorner); // bottom-left corner
   for (let c = 1; c <= 12; c++) {
     const th = document.createElement('th');
     th.textContent = c;
@@ -123,7 +136,10 @@ function buildGrid() {
     labelMap.col[c].push(th);
     footRow.appendChild(th);
   }
-  footRow.appendChild(document.createElement('th')); // bottom-right corner
+  const brCorner = document.createElement('th');
+  brCorner.dataset.diagonal = 'main';
+  cornerMap.main.push(brCorner);
+  footRow.appendChild(brCorner); // bottom-right corner
   tfoot.appendChild(footRow);
   grid.appendChild(tfoot);
 }
@@ -134,6 +150,7 @@ function clearGrid() {
   browseRow = null;
   browseCol = null;
   browseCell = null;
+  browseDiag = null;
   for (let r = 1; r <= 12; r++) {
     for (let c = 1; c <= 12; c++) {
       const td = cellMap[`${r},${c}`];
@@ -149,19 +166,23 @@ function clearGrid() {
       th.classList.remove('active-label', 'browse-label');
     }
   }
+  for (const th of [...cornerMap.main, ...cornerMap.anti]) {
+    th.classList.remove('browse-corner');
+  }
 }
 
 function applyBrowseHighlights() {
   // Clear existing browse highlights
   for (let r = 1; r <= 12; r++) {
     for (let c = 1; c <= 12; c++) {
-      cellMap[`${r},${c}`].classList.remove('browse-row', 'browse-col', 'browse-both');
+      cellMap[`${r},${c}`].classList.remove('browse-row', 'browse-col', 'browse-both', 'browse-diag');
     }
     for (const th of labelMap.row[r]) th.classList.remove('browse-label');
   }
   for (let c = 1; c <= 12; c++) {
     for (const th of labelMap.col[c]) th.classList.remove('browse-label');
   }
+  for (const th of [...cornerMap.main, ...cornerMap.anti]) th.classList.remove('browse-corner');
 
   if (browseRow !== null) {
     for (let c = 1; c <= 12; c++) {
@@ -176,6 +197,13 @@ function applyBrowseHighlights() {
       cellMap[`${r},${browseCol}`].classList.add('browse-col');
     }
     for (const th of labelMap.col[browseCol]) th.classList.add('browse-label');
+  }
+  if (browseDiag !== null) {
+    for (let i = 1; i <= 12; i++) {
+      const c = browseDiag === 'main' ? i : 13 - i;
+      cellMap[`${i},${c}`].classList.add('browse-diag');
+    }
+    for (const th of cornerMap[browseDiag]) th.classList.add('browse-corner');
   }
 }
 
@@ -487,7 +515,7 @@ grid.addEventListener('click', (e) => {
       // Same cell clicked again — clear
       browseRow = null; browseCol = null; browseCell = null;
     } else {
-      browseRow = r; browseCol = c; browseCell = { r, c };
+      browseRow = r; browseCol = c; browseCell = { r, c }; browseDiag = null;
     }
     applyBrowseHighlights();
   } else if (th && th.dataset.row) {
@@ -495,7 +523,7 @@ grid.addEventListener('click', (e) => {
     if (browseRow === r && browseCell === null) {
       browseRow = null;
     } else {
-      browseRow = r; browseCell = null;
+      browseRow = r; browseCell = null; browseDiag = null;
     }
     applyBrowseHighlights();
   } else if (th && th.dataset.col) {
@@ -503,7 +531,15 @@ grid.addEventListener('click', (e) => {
     if (browseCol === c && browseCell === null) {
       browseCol = null;
     } else {
-      browseCol = c; browseCell = null;
+      browseCol = c; browseCell = null; browseDiag = null;
+    }
+    applyBrowseHighlights();
+  } else if (th && th.dataset.diagonal) {
+    const diag = th.dataset.diagonal;
+    if (browseDiag === diag) {
+      browseDiag = null;
+    } else {
+      browseRow = null; browseCol = null; browseCell = null; browseDiag = diag;
     }
     applyBrowseHighlights();
   }
