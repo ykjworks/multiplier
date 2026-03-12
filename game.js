@@ -16,11 +16,36 @@ const endMessage = document.getElementById('end-message');
 const cellMap = {};          // cellMap["a,b"] → <td>
 const labelMap = { row: {}, col: {} };  // labelMap.row[n] → [<th left>, <th right>]
 
+// ─── Options (persisted) ─────────────────────────────────────────────────────
+
+const OPTIONS_KEY = 'multiplicationOptions';
+const options = { mode: 'countdown', hideTimer: false };
+
+function loadOptions() {
+  try {
+    const saved = localStorage.getItem(OPTIONS_KEY);
+    if (saved) Object.assign(options, JSON.parse(saved));
+  } catch (e) {}
+}
+
+function saveOptions() {
+  localStorage.setItem(OPTIONS_KEY, JSON.stringify(options));
+}
+
+function applyOptions() {
+  document.querySelector(`input[name="opt-mode"][value="${options.mode}"]`).checked = true;
+  document.getElementById('opt-hide-timer').checked = options.hideTimer;
+  const isStopwatch = options.mode === 'stopwatch';
+  document.getElementById('timer-setting').style.display = isStopwatch ? 'none' : '';
+  document.getElementById('mode-label').style.display = isStopwatch ? '' : 'none';
+}
+
 // Game state
 const state = {
   phase: 'idle',   // 'idle' | 'running' | 'pausing' | 'ended'
   totalSeconds: 240,
   secondsLeft: 240,
+  stopwatchSeconds: 0,
   timerInterval: null,
   currentA: null,
   currentB: null,
@@ -162,9 +187,13 @@ function handleStartStop() {
 }
 
 function startGame() {
-  const minutes = parseInt(timerInput.value, 10) || 4;
-  state.totalSeconds = minutes * 60;
-  state.secondsLeft = state.totalSeconds;
+  if (options.mode === 'countdown') {
+    const minutes = parseInt(timerInput.value, 10) || 4;
+    state.totalSeconds = minutes * 60;
+    state.secondsLeft = state.totalSeconds;
+  } else {
+    state.stopwatchSeconds = 0;
+  }
   state.score.right = 0;
   state.score.wrong = 0;
   state.revealedPairs = new Map();
@@ -274,24 +303,36 @@ function continueAfterAnswer() {
 // ─── Timer ───────────────────────────────────────────────────────────────────
 
 function updateCountdown() {
-  const m = Math.floor(state.secondsLeft / 60);
-  const s = state.secondsLeft % 60;
-  countdown.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  if (options.hideTimer) {
+    countdown.textContent = '(timer running)';
+    return;
+  }
+  if (options.mode === 'countdown') {
+    const m = Math.floor(state.secondsLeft / 60);
+    const s = state.secondsLeft % 60;
+    countdown.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  } else {
+    const m = Math.floor(state.stopwatchSeconds / 60);
+    const s = state.stopwatchSeconds % 60;
+    countdown.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  }
 }
 
 function tickTimer() {
-  state.secondsLeft--;
+  if (options.mode === 'countdown') {
+    state.secondsLeft--;
+    if (state.secondsLeft <= 30) countdown.classList.add('warning');
+    if (state.secondsLeft <= 0) { endGame(); return; }
+  } else {
+    state.stopwatchSeconds++;
+  }
   updateCountdown();
-  if (state.secondsLeft <= 30) {
-    countdown.classList.add('warning');
-  }
-  if (state.secondsLeft <= 0) {
-    endGame();
-  }
 }
 
 function formatElapsed() {
-  const elapsed = state.totalSeconds - state.secondsLeft;
+  const elapsed = options.mode === 'countdown'
+    ? state.totalSeconds - state.secondsLeft
+    : state.stopwatchSeconds;
   const m = Math.floor(elapsed / 60);
   const s = elapsed % 60;
   return s === 0 ? `${m} minute${m !== 1 ? 's' : ''}` : `${m}:${s.toString().padStart(2, '0')}`;
@@ -335,7 +376,8 @@ function endGame() {
 
   endMessage.innerHTML = '';
   const msg = document.createElement('span');
-  msg.textContent = `Time's up! You completed ${total} fact${total !== 1 ? 's' : ''} in ${timeStr} and got ${right} (${pct}%) correct.`;
+  const prefix = options.mode === 'countdown' ? "Time's up!" : 'Stopped!';
+  msg.textContent = `${prefix} You completed ${total} fact${total !== 1 ? 's' : ''} in ${timeStr} and got ${right} (${pct}%) correct.`;
   const btn = document.createElement('button');
   btn.id = 'show-all-btn';
   btn.textContent = 'Show All Facts';
@@ -363,9 +405,38 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Options popup toggle
+const optionsBtn = document.getElementById('options-btn');
+const optionsPopup = document.getElementById('options-popup');
+
+optionsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  optionsPopup.classList.toggle('visible');
+});
+
+document.addEventListener('click', () => optionsPopup.classList.remove('visible'));
+optionsPopup.addEventListener('click', (e) => e.stopPropagation());
+
+document.querySelectorAll('input[name="opt-mode"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    options.mode = radio.value;
+    saveOptions();
+    const isStopwatch = options.mode === 'stopwatch';
+    document.getElementById('timer-setting').style.display = isStopwatch ? 'none' : '';
+    document.getElementById('mode-label').style.display = isStopwatch ? '' : 'none';
+  });
+});
+
+document.getElementById('opt-hide-timer').addEventListener('change', (e) => {
+  options.hideTimer = e.target.checked;
+  saveOptions();
+});
+
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 
+loadOptions();
 buildGrid();
 revealAll();                       // req 11: show all values on load
 instructions.classList.add('visible');  // req 10: show instructions on first load
+applyOptions();

@@ -21,3 +21,5 @@ Web-based game that helps students master multiplication facts
 13. Use 1.5rem font size for grid.
 14. When game completes, show a message at the top like "Time's up! You completed 56 facts in 4 minutes and got 51 (91%) correct." and include a button to reset the grid (show all facts).
 15. When game completes, show all the completed facts on the grid. If the most recent answer for a cell was correct, highlight in green. If not, highlight in red.
+16. Support running in countdown mode (time set in advance) and stopwatch mode (no automatic game end, user has to press stop). This would be set in a popup options menu and be persisted across page reloads via browser storage.
+17. Support disabling the countdown/stopwatch timer display as an option in the popup options menu (also persisted in browser storage). When selected, just display the message "Game in progress..." instead of the timer.

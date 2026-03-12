@@ -11,8 +11,11 @@
   <h1>Multiplication Practice by YKJ Works</h1>
   <main>
     <div id="controls">
-      <label for="timer-input">Time (minutes):</label>
-      <input id="timer-input" type="number" min="1" max="10" value="4">
+      <div id="timer-setting">
+        <label for="timer-input">Time (minutes):</label>
+        <input id="timer-input" type="number" min="1" max="10" value="4">
+      </div>
+      <div id="mode-label" style="display:none">Stopwatch</div>
       <button id="start-btn">Start</button>
       <span id="countdown"></span>
     </div>
@@ -37,6 +40,19 @@
       <div id="scoreboard">
         <div id="score-right">Right: 0</div>
         <div id="score-wrong">Wrong: 0</div>
+        <div id="options-wrapper">
+          <button id="options-btn" title="Options">⚙ Options</button>
+          <div id="options-popup">
+            <div class="options-row">
+              <strong>Timer mode:</strong>
+              <label><input type="radio" name="opt-mode" value="countdown"> Countdown</label>
+              <label><input type="radio" name="opt-mode" value="stopwatch"> Stopwatch</label>
+            </div>
+            <div class="options-row">
+              <label><input type="checkbox" id="opt-hide-timer"> Hide timer display</label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
