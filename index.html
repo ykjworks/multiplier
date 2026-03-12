@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiplication Practice by YKJ Works</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <h1>Multiplication Practice by YKJ Works</h1>
+  <main>
+    <div id="controls">
+      <label for="timer-input">Time (minutes):</label>
+      <input id="timer-input" type="number" min="1" max="10" value="4">
+      <button id="start-btn">Start</button>
+      <span id="countdown"></span>
+    </div>
+    <div id="play-area">
+      <div id="game-area">
+        <div id="end-message"></div>
+        <div id="instructions">
+          <strong>How to play:</strong><br>
+          Set a time limit and click <em>Start</em>.<br>
+          A multiplication question will appear here — type your answer and press <kbd>Enter</kbd> (or click Submit).<br>
+          The row and column will be revealed; press <kbd>Enter</kbd> again to continue.<br>
+          Score as many correct answers as you can before time runs out!
+        </div>
+        <div id="question-box">
+          <span id="question-text"></span>
+          <input id="answer-input" type="number" min="1" max="144">
+          <button id="submit-btn">Submit</button>
+          <span id="continue-hint">Press Enter to continue</span>
+        </div>
+        <table id="grid"></table>
+      </div>
+      <div id="scoreboard">
+        <div id="score-right">Right: 0</div>
+        <div id="score-wrong">Wrong: 0</div>
+      </div>
+    </div>
+  </main>
+  <img id="watermark" src="favicon.svg" alt="">
+  <script src="game.js"></script>
+</body>
+</html>
