@@ -553,3 +553,20 @@ buildGrid();
 revealAll();                       // req 11: show all values on load
 instructions.classList.add('visible');  // req 10: show instructions on first load
 applyOptions();
+countdown.textContent = 'Hello!';
+
+const watermark = document.getElementById('watermark');
+const watermarkLabel = document.getElementById('watermark-label');
+let watermarkLabelTimeout = null;
+
+watermark.addEventListener('click', () => {
+  watermarkLabel.classList.add('visible');
+  clearTimeout(watermarkLabelTimeout);
+  watermarkLabelTimeout = setTimeout(() => watermarkLabel.classList.remove('visible'), 3000);
+});
+
+watermark.addEventListener('mouseenter', () => watermarkLabel.classList.add('visible'));
+watermark.addEventListener('mouseleave', () => {
+  clearTimeout(watermarkLabelTimeout);
+  watermarkLabel.classList.remove('visible');
+});
