@@ -233,12 +233,24 @@ kbd {
   cursor: pointer;
 }
 
+#hint-btn {
+  font-size: 0.85rem;
+  color: #888;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#hint-btn:hover {
+  color: #444;
+}
+
 #continue-btn {
   display: none;
 }
 
 #question-box.answer-mode #answer-input,
-#question-box.answer-mode #submit-btn {
+#question-box.answer-mode #submit-btn,
+#question-box.answer-mode #hint-btn {
   display: none;
 }
 
@@ -325,6 +337,17 @@ th.browse-label {
 #grid th[data-col],
 #grid th[data-diagonal] {
   cursor: pointer;
+}
+
+/* Hint cells */
+td.hint-neighbor {
+  background: #c8e6c9 !important;
+  font-weight: 900;
+}
+
+td.hint-answer {
+  background: #fff9c4 !important;
+  font-weight: 900;
 }
 
 /* Revealed answer cell */

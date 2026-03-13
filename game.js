@@ -321,6 +321,30 @@ function nextQuestion() {
   answerInput.focus();
 }
 
+function showHint() {
+  if (state.phase !== 'running') return;
+  const a = state.currentA;
+  const b = state.currentB;
+
+  // Show ? in the answer cell
+  const answerCell = cellMap[`${a},${b}`];
+  answerCell.textContent = '?';
+  answerCell.classList.add('hint-answer');
+
+  // Reveal the up to 4 neighboring cells
+  for (const [r, c] of [[a-1,b],[a+1,b],[a,b-1],[a,b+1]]) {
+    if (r >= 1 && r <= 12 && c >= 1 && c <= 12) {
+      const td = cellMap[`${r},${c}`];
+      td.textContent = r * c;
+      td.classList.add('hint-neighbor');
+    }
+  }
+
+  // Scroll hint into view, then refocus answer input without scrolling
+  cellMap[`${a},${b}`].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  answerInput.focus({ preventScroll: true });
+}
+
 function submitAnswer() {
   if (state.phase !== 'running') return;
 
@@ -457,6 +481,7 @@ startBtn.addEventListener('click', handleStartStop);
 instructions.addEventListener('click', () => instructions.classList.remove('visible'));
 
 submitBtn.addEventListener('click', submitAnswer);
+document.getElementById('hint-btn').addEventListener('click', (e) => { e.preventDefault(); showHint(); });
 document.getElementById('continue-btn').addEventListener('click', continueAfterAnswer);
 
 document.addEventListener('keydown', (e) => {
@@ -469,6 +494,11 @@ document.addEventListener('keydown', (e) => {
   } else if (e.key === 'Escape') {
     if (state.phase === 'running' || state.phase === 'pausing') {
       endGame();
+    }
+  } else if (e.key === 'h' || e.key === 'H') {
+    if (state.phase === 'running') {
+      e.preventDefault();
+      showHint();
     }
   }
 });
