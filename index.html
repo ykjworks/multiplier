@@ -42,9 +42,10 @@
         <div id="question-box">
           <span id="question-text"></span>
           <input id="answer-input" type="number" min="1" max="144">
-          <button id="submit-btn">Submit</button>
-          <a href="#" id="hint-btn">Hint</a>
-          <button id="continue-btn">Continue</button>
+          <button id="submit-btn">Submit <span class="key-hint">↵</span></button>
+          <button id="skip-btn">Skip <span class="key-hint">S</span></button>
+          <a href="#" id="hint-btn">Hint <span class="key-hint">H</span></a>
+          <button id="continue-btn">Continue <span class="key-hint">↵</span></button>
         </div>
         <table id="grid"></table>
       </div>
@@ -61,6 +62,9 @@
             </div>
             <div class="options-row">
               <label><input type="checkbox" id="opt-hide-timer"> Hide timer display</label>
+            </div>
+            <div class="options-row">
+              <label>Time before skip offered (sec): <input type="number" id="opt-skip-delay" min="1" max="60" value="5" style="width:50px"></label>
             </div>
           </div>
         </div>

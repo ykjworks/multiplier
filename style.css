@@ -233,6 +233,30 @@ kbd {
   cursor: pointer;
 }
 
+#skip-btn {
+  display: none;
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  background: #fff3e0;
+  border: 1px solid #fb8c00;
+  color: #e65100;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+#skip-btn.visible {
+  display: block;
+}
+
+#question-box.answer-mode #skip-btn {
+  display: none;
+}
+
 #hint-btn {
   font-size: 0.85rem;
   color: #888;
@@ -242,6 +266,11 @@ kbd {
 
 #hint-btn:hover {
   color: #444;
+}
+
+.key-hint {
+  font-size: 0.75em;
+  opacity: 0.7;
 }
 
 #continue-btn {
@@ -256,6 +285,15 @@ kbd {
 
 #question-box.answer-mode #continue-btn {
   display: inline-block;
+}
+
+#question-box.wrong-answer {
+  background: #ffcdd2;
+  border-color: #b71c1c;
+}
+
+.wrong-val {
+  color: #b71c1c;
 }
 
 /* Grid fills game-area */
@@ -358,14 +396,6 @@ td.answer-cell {
   color: #1b5e20;
 }
 
-/* Wrong answer flash (temporary) */
-td.wrong-flash {
-  background: #ffcdd2 !important;
-  font-weight: 900;
-  font-size: 1.65rem;
-  color: #b71c1c;
-}
-
 /* Wrong answer cell (permanent, shown at end of game) */
 td.wrong-cell {
   font-weight: 900;
@@ -463,6 +493,7 @@ td.wrong-cell {
   /* Minimum 44px touch targets */
   #start-btn,
   #submit-btn,
+  #skip-btn,
   #continue-btn,
   #options-btn {
     min-height: 44px;
@@ -487,7 +518,6 @@ td.wrong-cell {
   }
 
   td.answer-cell,
-  td.wrong-flash,
   td.wrong-cell {
     font-size: 0.8rem;
   }

@@ -7,6 +7,7 @@ const questionBox = document.getElementById('question-box');
 const questionText = document.getElementById('question-text');
 const answerInput = document.getElementById('answer-input');
 const submitBtn = document.getElementById('submit-btn');
+const skipBtn = document.getElementById('skip-btn');
 const grid = document.getElementById('grid');
 const scoreRight = document.getElementById('score-right');
 const scoreWrong = document.getElementById('score-wrong');
@@ -17,6 +18,9 @@ const cellMap = {};          // cellMap["a,b"] → <td>
 const labelMap = { row: {}, col: {} };  // labelMap.row[n] → [<th left>, <th right>]
 const cornerMap = { main: [], anti: [] }; // corner th elements keyed by diagonal
 
+// Skip button timer
+let skipTimeout = null;
+
 // Browse-highlight state (used when game is idle or ended)
 let browseRow = null;
 let browseCol = null;
@@ -26,7 +30,7 @@ let browseDiag = null; // 'main' | 'anti' | null
 // ─── Options (persisted) ─────────────────────────────────────────────────────
 
 const OPTIONS_KEY = 'multiplicationOptions';
-const options = { mode: 'countdown', hideTimer: false };
+const options = { mode: 'countdown', hideTimer: false, skipDelay: 5 };
 
 function loadOptions() {
   try {
@@ -42,6 +46,7 @@ function saveOptions() {
 function applyOptions() {
   document.querySelector(`input[name="opt-mode"][value="${options.mode}"]`).checked = true;
   document.getElementById('opt-hide-timer').checked = options.hideTimer;
+  document.getElementById('opt-skip-delay').value = options.skipDelay;
   const isStopwatch = options.mode === 'stopwatch';
   document.getElementById('timer-setting').style.display = isStopwatch ? 'none' : '';
   document.getElementById('mode-label').style.display = isStopwatch ? '' : 'none';
@@ -225,11 +230,7 @@ function revealRowCol(a, b, correct) {
   const intersection = cellMap[`${a},${b}`];
   intersection.textContent = a * b;
   intersection.classList.remove('highlight-row', 'highlight-col', 'highlight-both');
-  if (correct) {
-    intersection.classList.add('answer-cell');
-  } else {
-    intersection.classList.add('wrong-flash');
-  }
+  intersection.classList.add('answer-cell');
 }
 
 function revealAll() {
@@ -319,6 +320,13 @@ function nextQuestion() {
   questionBox.classList.remove('answer-mode');
   questionBox.classList.add('visible');
   answerInput.focus();
+
+  // Show skip button after configured delay
+  skipBtn.classList.remove('visible');
+  clearTimeout(skipTimeout);
+  skipTimeout = setTimeout(() => {
+    if (state.phase === 'running') skipBtn.classList.add('visible');
+  }, options.skipDelay * 1000);
 }
 
 function showHint() {
@@ -347,6 +355,10 @@ function showHint() {
 
 function submitAnswer() {
   if (state.phase !== 'running') return;
+
+  clearTimeout(skipTimeout);
+  skipTimeout = null;
+  skipBtn.classList.remove('visible');
 
   const val = parseInt(answerInput.value, 10);
   if (isNaN(val)) return;
@@ -377,13 +389,45 @@ function submitAnswer() {
   revealRowCol(a, b, correct);
 
   // Switch question-box to answer mode
+  if (!correct) {
+    questionText.innerHTML = `${a} &times; ${b} <span style="font-size:larger">&ne;</span> <span class="wrong-val">${val}</span>`;
+    questionBox.classList.add('wrong-answer');
+  } else {
+    questionText.textContent = `${a} × ${b} = ${a * b}`;
+    questionBox.classList.remove('wrong-answer');
+  }
+  questionBox.classList.add('answer-mode');
+}
+
+function skipQuestion() {
+  if (state.phase !== 'running') return;
+  clearTimeout(skipTimeout);
+  skipTimeout = null;
+  skipBtn.classList.remove('visible');
+
+  const a = state.currentA;
+  const b = state.currentB;
+
+  state.score.wrong++;
+  scoreWrong.textContent = `Wrong: ${state.score.wrong}`;
+  state.revealedPairs.set(`${a},${b}`, false);
+  state.phase = 'pausing';
+
+  for (let c = 1; c <= 12; c++) {
+    cellMap[`${a},${c}`].classList.remove('highlight-row', 'highlight-both', 'highlight-col');
+  }
+  for (let r = 1; r <= 12; r++) {
+    cellMap[`${r},${b}`].classList.remove('highlight-col', 'highlight-row', 'highlight-both');
+  }
+
+  revealRowCol(a, b, false);
   questionText.textContent = `${a} × ${b} = ${a * b}`;
   questionBox.classList.add('answer-mode');
 }
 
 function continueAfterAnswer() {
   if (state.phase !== 'pausing') return;
-  questionBox.classList.remove('visible', 'answer-mode');
+  questionBox.classList.remove('visible', 'answer-mode', 'wrong-answer');
   clearGrid();
   nextQuestion();
 }
@@ -448,6 +492,9 @@ function showAllFacts() {
 
 function endGame() {
   state.phase = 'ended';
+  clearTimeout(skipTimeout);
+  skipTimeout = null;
+  skipBtn.classList.remove('visible');
   clearInterval(state.timerInterval);
   state.timerInterval = null;
   questionBox.classList.remove('visible', 'answer-mode');
@@ -468,7 +515,7 @@ function endGame() {
   msg.textContent = `${prefix} You completed ${total} fact${total !== 1 ? 's' : ''} in ${timeStr} and got ${right} (${pct}%) correct.`;
   const btn = document.createElement('button');
   btn.id = 'show-all-btn';
-  btn.textContent = 'Show All Facts';
+  btn.textContent = 'Reset';
   btn.addEventListener('click', showAllFacts);
   endMessage.appendChild(msg);
   endMessage.appendChild(btn);
@@ -481,6 +528,7 @@ startBtn.addEventListener('click', handleStartStop);
 instructions.addEventListener('click', () => instructions.classList.remove('visible'));
 
 submitBtn.addEventListener('click', submitAnswer);
+skipBtn.addEventListener('click', skipQuestion);
 document.getElementById('hint-btn').addEventListener('click', (e) => { e.preventDefault(); showHint(); });
 document.getElementById('continue-btn').addEventListener('click', continueAfterAnswer);
 
@@ -499,6 +547,11 @@ document.addEventListener('keydown', (e) => {
     if (state.phase === 'running') {
       e.preventDefault();
       showHint();
+    }
+  } else if (e.key === 's' || e.key === 'S') {
+    if (state.phase === 'running' && skipBtn.classList.contains('visible')) {
+      e.preventDefault();
+      skipQuestion();
     }
   }
 });
@@ -528,6 +581,11 @@ document.querySelectorAll('input[name="opt-mode"]').forEach(radio => {
 document.getElementById('opt-hide-timer').addEventListener('change', (e) => {
   options.hideTimer = e.target.checked;
   saveOptions();
+});
+
+document.getElementById('opt-skip-delay').addEventListener('input', (e) => {
+  const v = parseInt(e.target.value, 10);
+  if (v >= 1) { options.skipDelay = v; saveOptions(); }
 });
 
 // Browse highlighting — only active when game is idle or ended
