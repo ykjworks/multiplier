@@ -533,11 +533,28 @@ th.wrong-label {
   /* Minimum 44px touch targets */
   #start-btn,
   #submit-btn,
-  #skip-btn,
   #continue-btn,
   #options-btn {
     min-height: 44px;
     padding: 10px 16px;
+  }
+
+  /* Skip flows inline after Hint on mobile */
+  #hint-btn {
+    order: 9;
+  }
+
+  #skip-btn {
+    position: static;
+    transform: none;
+    order: 10;
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    min-height: unset;
+  }
+
+  #skip-btn.visible {
+    display: inline-block;
   }
 
   #timer-input,
