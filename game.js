@@ -29,8 +29,8 @@ let browseDiag = null; // 'main' | 'anti' | null
 
 // ─── Options (persisted) ─────────────────────────────────────────────────────
 
-const OPTIONS_KEY = 'multiplicationOptions';
-const options = { mode: 'countdown', hideTimer: false, skipDelay: 5 };
+const OPTIONS_KEY = 'multiplicationDivisionOptions';
+const options = { mode: 'countdown', hideTimer: false, skipDelay: 5, questionMode: 'multiply' };
 
 function loadOptions() {
   try {
@@ -47,6 +47,7 @@ function applyOptions() {
   document.querySelector(`input[name="opt-mode"][value="${options.mode}"]`).checked = true;
   document.getElementById('opt-hide-timer').checked = options.hideTimer;
   document.getElementById('opt-skip-delay').value = options.skipDelay;
+  document.getElementById('question-mode').value = options.questionMode;
   const isStopwatch = options.mode === 'stopwatch';
   document.getElementById('timer-setting').style.display = isStopwatch ? 'none' : '';
   document.getElementById('mode-label').style.display = isStopwatch ? '' : 'none';
@@ -61,6 +62,8 @@ const state = {
   timerInterval: null,
   currentA: null,
   currentB: null,
+  currentIsMultiplication: null,
+  currentDivisorIsRow: null,
   score: { right: 0, wrong: 0 },
   revealedPairs: new Map(),  // "a,b" → true (correct) | false (wrong)
 };
@@ -163,12 +166,12 @@ function clearGrid() {
       td.className = '';
     }
     for (const th of labelMap.row[r]) {
-      th.classList.remove('active-label', 'browse-label');
+      th.classList.remove('active-label', 'browse-label', 'answer-label', 'wrong-label');
     }
   }
   for (let c = 1; c <= 12; c++) {
     for (const th of labelMap.col[c]) {
-      th.classList.remove('active-label', 'browse-label');
+      th.classList.remove('active-label', 'browse-label', 'answer-label', 'wrong-label');
     }
   }
   for (const th of [...cornerMap.main, ...cornerMap.anti]) {
@@ -230,7 +233,6 @@ function revealRowCol(a, b, correct) {
   const intersection = cellMap[`${a},${b}`];
   intersection.textContent = a * b;
   intersection.classList.remove('highlight-row', 'highlight-col', 'highlight-both');
-  intersection.classList.add('answer-cell');
 }
 
 function revealAll() {
@@ -300,22 +302,41 @@ function nextQuestion() {
 
   state.currentA = a;
   state.currentB = b;
+  const isMultiplication = options.questionMode === 'multiply' ? true
+    : options.questionMode === 'divide' ? false
+    : Math.random() < 0.5;
+  state.currentIsMultiplication = isMultiplication;
   state.phase = 'running';
 
-  // Apply highlights
-  for (let c = 1; c <= 12; c++) {
-    cellMap[`${a},${c}`].classList.add(c === b ? 'highlight-both' : 'highlight-row');
+  if (isMultiplication) {
+    // Highlight both row and column
+    for (let c = 1; c <= 12; c++) {
+      cellMap[`${a},${c}`].classList.add(c === b ? 'highlight-both' : 'highlight-row');
+    }
+    for (let r = 1; r <= 12; r++) {
+      if (r !== a) cellMap[`${r},${b}`].classList.add('highlight-col');
+    }
+    for (const th of labelMap.row[a]) th.classList.add('active-label');
+    for (const th of labelMap.col[b]) th.classList.add('active-label');
+    questionText.textContent = `${a} × ${b} = `;
+  } else {
+    // Division: highlight only the divisor's axis
+    const divisorIsRow = Math.random() < 0.5;
+    state.currentDivisorIsRow = divisorIsRow;
+    const divisor = divisorIsRow ? a : b;
+    if (divisorIsRow) {
+      for (let c = 1; c <= 12; c++) {
+        cellMap[`${a},${c}`].classList.add(c === b ? 'highlight-both' : 'highlight-row');
+      }
+      for (const th of labelMap.row[a]) th.classList.add('active-label');
+    } else {
+      for (let r = 1; r <= 12; r++) {
+        cellMap[`${r},${b}`].classList.add(r === a ? 'highlight-both' : 'highlight-col');
+      }
+      for (const th of labelMap.col[b]) th.classList.add('active-label');
+    }
+    questionText.textContent = `${a * b} ÷ ${divisor} = `;
   }
-  for (let r = 1; r <= 12; r++) {
-    if (r !== a) cellMap[`${r},${b}`].classList.add('highlight-col');
-  }
-
-  // Active labels
-  for (const th of labelMap.row[a]) th.classList.add('active-label');
-  for (const th of labelMap.col[b]) th.classList.add('active-label');
-
-  // Show question box in question mode
-  questionText.textContent = `${a} × ${b} = `;
   answerInput.value = '';
   questionBox.classList.remove('answer-mode');
   questionBox.classList.add('visible');
@@ -334,17 +355,30 @@ function showHint() {
   const a = state.currentA;
   const b = state.currentB;
 
-  // Show ? in the answer cell
-  const answerCell = cellMap[`${a},${b}`];
-  answerCell.textContent = '?';
-  answerCell.classList.add('hint-answer');
+  if (state.currentIsMultiplication) {
+    // Show ? in the answer cell
+    const answerCell = cellMap[`${a},${b}`];
+    answerCell.textContent = '?';
+    answerCell.classList.add('hint-answer');
 
-  // Reveal the up to 4 neighboring cells
-  for (const [r, c] of [[a-1,b],[a+1,b],[a,b-1],[a,b+1]]) {
-    if (r >= 1 && r <= 12 && c >= 1 && c <= 12) {
-      const td = cellMap[`${r},${c}`];
-      td.textContent = r * c;
-      td.classList.add('hint-neighbor');
+    // Reveal the up to 4 neighboring cells
+    for (const [r, c] of [[a-1,b],[a+1,b],[a,b-1],[a,b+1]]) {
+      if (r >= 1 && r <= 12 && c >= 1 && c <= 12) {
+        const td = cellMap[`${r},${c}`];
+        td.textContent = r * c;
+        td.classList.add('hint-neighbor');
+      }
+    }
+  } else {
+    // Division: reveal 2 neighbors along divisor's axis
+    const divisorIsRow = state.currentDivisorIsRow;
+    const neighbors = divisorIsRow ? [[a, b-1], [a, b+1]] : [[a-1, b], [a+1, b]];
+    for (const [r, c] of neighbors) {
+      if (r >= 1 && r <= 12 && c >= 1 && c <= 12) {
+        const td = cellMap[`${r},${c}`];
+        td.textContent = r * c;
+        td.classList.add('hint-neighbor');
+      }
     }
   }
 
@@ -365,7 +399,10 @@ function submitAnswer() {
 
   const a = state.currentA;
   const b = state.currentB;
-  const correct = val === a * b;
+  const isMultiplication = state.currentIsMultiplication;
+  const correct = isMultiplication
+    ? val === a * b
+    : val === (state.currentDivisorIsRow ? b : a);
 
   if (correct) {
     state.score.right++;
@@ -389,12 +426,28 @@ function submitAnswer() {
   revealRowCol(a, b, correct);
 
   // Switch question-box to answer mode
-  if (!correct) {
-    questionText.innerHTML = `${a} &times; ${b} <span style="font-size:larger">&ne;</span> <span class="wrong-val">${val}</span>`;
-    questionBox.classList.add('wrong-answer');
+  if (isMultiplication) {
+    cellMap[`${a},${b}`].classList.add('answer-cell');
+    if (!correct) {
+      questionText.innerHTML = `${a} &times; ${b} <span style="font-size:larger">&ne;</span> <span class="wrong-val">${val}</span>`;
+      questionBox.classList.add('wrong-answer');
+    } else {
+      questionText.textContent = `${a} × ${b} = ${a * b}`;
+      questionBox.classList.remove('wrong-answer');
+    }
   } else {
-    questionText.textContent = `${a} × ${b} = ${a * b}`;
-    questionBox.classList.remove('wrong-answer');
+    const divisorIsRow = state.currentDivisorIsRow;
+    const divisor = divisorIsRow ? a : b;
+    const quotient = divisorIsRow ? b : a;
+    const quotientLabels = divisorIsRow ? labelMap.col[quotient] : labelMap.row[quotient];
+    for (const th of quotientLabels) th.classList.add(correct ? 'answer-label' : 'wrong-label');
+    if (!correct) {
+      questionText.innerHTML = `${a * b} &divide; ${divisor} <span style="font-size:larger">&ne;</span> <span class="wrong-val">${val}</span>`;
+      questionBox.classList.add('wrong-answer');
+    } else {
+      questionText.textContent = `${a * b} ÷ ${divisor} = ${quotient}`;
+      questionBox.classList.remove('wrong-answer');
+    }
   }
   questionBox.classList.add('answer-mode');
 }
@@ -407,6 +460,7 @@ function skipQuestion() {
 
   const a = state.currentA;
   const b = state.currentB;
+  const isMultiplication = state.currentIsMultiplication;
 
   state.score.wrong++;
   scoreWrong.textContent = `Wrong: ${state.score.wrong}`;
@@ -421,7 +475,18 @@ function skipQuestion() {
   }
 
   revealRowCol(a, b, false);
-  questionText.textContent = `${a} × ${b} = ${a * b}`;
+
+  if (isMultiplication) {
+    cellMap[`${a},${b}`].classList.add('answer-cell');
+    questionText.textContent = `${a} × ${b} = ${a * b}`;
+  } else {
+    const divisorIsRow = state.currentDivisorIsRow;
+    const divisor = divisorIsRow ? a : b;
+    const quotient = divisorIsRow ? b : a;
+    const quotientLabels = divisorIsRow ? labelMap.col[quotient] : labelMap.row[quotient];
+    for (const th of quotientLabels) th.classList.add('wrong-label');
+    questionText.textContent = `${a * b} ÷ ${divisor} = ${quotient}`;
+  }
   questionBox.classList.add('answer-mode');
 }
 
@@ -586,6 +651,11 @@ document.getElementById('opt-hide-timer').addEventListener('change', (e) => {
 document.getElementById('opt-skip-delay').addEventListener('input', (e) => {
   const v = parseInt(e.target.value, 10);
   if (v >= 1) { options.skipDelay = v; saveOptions(); }
+});
+
+document.getElementById('question-mode').addEventListener('change', (e) => {
+  options.questionMode = e.target.value;
+  saveOptions();
 });
 
 // Browse highlighting — only active when game is idle or ended

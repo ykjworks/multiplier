@@ -2,7 +2,7 @@
 
 # Overview
 
-Web-based game that helps students master multiplication facts
+Web-based game that helps students master multiplication and division facts
 
 # Detailed Requirements
 
@@ -26,3 +26,7 @@ Web-based game that helps students master multiplication facts
 18. Support a hint mode via a small link to the right of the answer submit button. If clicked/tapped, or if the user types an "h" in the answer box or even when answer box is not focused, reveal the values in cells above and below, left and right of the answer cell (2-4 cells depending on placement. Scroll window to hint location and reset focus to answer box (without scrolling back up). Display a "?" in the answer cell.
 19. A "Skip (S)" button floats to the right of the Submit button in the question box. It only appears after a configurable delay (in seconds) once a question is shown. Clicking it or pressing S on the keyboard (when the button is visible) proceeds as if the question was answered incorrectly.
 20. The skip delay is configurable via the Options popup with the label "Time before skip offered (sec)", persisted in browser storage.
+21. A question mode dropdown appears in the scoreboard panel above the Options button. It has three options — Multiplication, Division, and Mixed — defaulting to Multiplication. The selection is persisted in browser storage.
+22. In Multiplication mode, each question presents "a × b = ?" and expects the product as the answer. Both the row (a) and column (b) are highlighted, and the hint reveals the four neighboring cells around the answer cell.
+23. In Division mode, each question selects a pair (a, b) and randomly designates one as the divisor. The question is presented as "a×b ÷ divisor = ?", expecting the quotient (the other factor) as the answer. Only the divisor's row or column is highlighted. On reveal, the quotient's row or column label is highlighted green (correct) or red (wrong). The hint reveals the two neighboring cells along the divisor's axis.
+24. In Mixed mode, each question is independently and randomly chosen to be either a multiplication or division question with equal probability.

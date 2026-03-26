@@ -53,9 +53,26 @@ h1 {
   min-width: 60px;
 }
 
+#mode-options-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+  width: 100%;
+}
+
+#question-mode {
+  width: 100%;
+  padding: 6px 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+}
+
 #options-wrapper {
   position: relative;
-  margin-top: auto;
 }
 
 #options-btn {
@@ -404,6 +421,21 @@ td.wrong-cell {
   color: #b71c1c;
 }
 
+/* Quotient label highlighting after division answer */
+th.answer-label {
+  background: #c8e6c9 !important;
+  color: #1b5e20;
+  font-weight: 900;
+  font-size: 1.7rem;
+}
+
+th.wrong-label {
+  background: #ffcdd2 !important;
+  color: #b71c1c;
+  font-weight: 900;
+  font-size: 1.7rem;
+}
+
 /* Scoreboard */
 #scoreboard {
   display: flex;
@@ -465,9 +497,17 @@ td.wrong-cell {
     gap: 16px;
   }
 
-  #options-wrapper {
+  #mode-options-group {
+    flex-direction: column;
     margin-top: 0;
     margin-left: auto;
+    width: auto;
+    gap: 8px;
+  }
+
+  #question-mode {
+    width: auto;
+    font-size: 0.85rem;
   }
 
   #options-btn {
@@ -520,6 +560,11 @@ td.wrong-cell {
   td.answer-cell,
   td.wrong-cell {
     font-size: 0.8rem;
+  }
+
+  th.answer-label,
+  th.wrong-label {
+    font-size: 0.85rem;
   }
 }
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multiplication Practice by YKJ Works</title>
+  <title>Multiplication &amp; Division Practice by YKJ Works</title>
   <link rel="stylesheet" href="style.css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-GPT57028LS"></script>
   <script>
@@ -15,7 +15,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
 <body>
-  <h1>Multiplication Practice</h1>
+  <h1>Multiplication &amp; Division Practice</h1>
   <main>
     <div id="controls">
       <div id="timer-setting">
@@ -34,7 +34,7 @@
           <ol>
           <li>Set a time limit or switch to Stopwatch mode in Options.</li>
           <li>Click or tap <em>Start</em>.</li>
-          <li>A multiplication question will appear — type your answer and press <kbd>Enter</kbd> or tap <em>Submit</em>.</li>
+          <li>A multiplication or division question will appear — type your answer and press <kbd>Enter</kbd> or tap <em>Submit</em>.</li>
           <li>The answer will be revealed; press <kbd>Enter</kbd> or tap <em>Continue</em> to proceed.</li>
           <li>Click or tap <em>Stop</em> or press <kbd>Esc</kbd> at any time to see how you did.</li>
           </ol>
@@ -52,7 +52,13 @@
       <div id="scoreboard">
         <div id="score-right">Right: 0</div>
         <div id="score-wrong">Wrong: 0</div>
-        <div id="options-wrapper">
+        <div id="mode-options-group">
+          <select id="question-mode">
+            <option value="multiply" selected>Multiplication</option>
+            <option value="divide">Division</option>
+            <option value="mixed">Mixed</option>
+          </select>
+          <div id="options-wrapper">
           <button id="options-btn" title="Options">⚙ Options</button>
           <div id="options-popup">
             <div class="options-row">
@@ -68,11 +74,12 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
   </main>
-  <img id="watermark" src="favicon.svg" alt="" title="Multiplier by YKJ Works">
-  <div id="watermark-label">Multiplier by YKJ Works</div>
+  <img id="watermark" src="favicon.svg" alt="" title="×÷ Practice by YKJ Works">
+  <div id="watermark-label">×÷ Practice by YKJ Works</div>
   <script src="game.js"></script>
 </body>
 </html>
